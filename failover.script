@@ -1,0 +1,20 @@
+:local LoopWhile true;
+:local PingResult
+
+:while ($LoopWhile) do={
+
+:set PingResult [ping 8.8.8.8 count=4 interface=WAN1]
+
+:set PingResult ($PingResult + [ping 194.204.159.1 count=4 interface=WAN1])
+
+:if ($PingResult < 4) do={
+:local WANBack 0
+/ip firewall mangle enable 5
+:log warning "WAN1 nie odpowiada, przelaczono na WAN2 w podsieci x.x.25.x"
+:while ($WANBack < 10) do={
+:set WANBack ($WANBack + [ping 194.204.159.1 count=1 interface=WAN1] + [ping 8.8.8.8 count=1 interface=WAN1])
+}
+/ip firewall mangle disable 5
+:log warning "Przelaczono podsiec x.x.25.x na WAN1"
+}
+}
